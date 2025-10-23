@@ -34,12 +34,6 @@
       width: auto;
       max-width: 100%;
     }
-    .weather {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      margin: 20px 0;
-    }
     .main {
       display: flex;
       justify-content: space-between;
@@ -84,34 +78,11 @@
       font-size: 1.3rem;
       border-radius: 12px;
     }
-    ul {
-      padding-left: 20px;
-      margin: 0;
-      list-style-type: disc;
-    }
-    ul li {
-      margin-bottom: 10px;
-    }
-    .input-container {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-    }
-    .input-container input {
-      flex: 1;
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    .input-container button {
-      padding: 8px 12px;
+    iframe {
+      border-radius: 12px;
+      width: 100%;
+      height: 310px;
       border: none;
-      border-radius: 8px;
-      background-color: #17D860;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
     }
   </style>
 </head>
@@ -120,23 +91,17 @@
     <img src="home.png" alt="Home">
   </header>
 
-  <div class="weather">
-    <iframe src="https://www.meteoblue.com/en/weather/widget/three/royston_hertfordshire_united-kingdom_2639110?geoloc=fixed&nocurrent=0&noforecast=0&days=3&tempunit=CELSIUS&windunit=METER_PER_SECOND&layout=light" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups" style="width: 320px; height: 310px; border-radius: 12px;"></iframe>
-  </div>
-
   <div class="main">
-    <div class="notice" id="publicNotice">
-      <strong>Public Notice Board:</strong>
-      <ul id="noticeList"></ul>
-      <div class="input-container">
-        <input type="text" id="newNoticeInput" placeholder="Add new note...">
-        <button id="addNoticeBtn">Add</button>
-      </div>
+    <div class="notice">
+      <strong>Weather - Royston, Hertfordshire:</strong>
+      <iframe src="https://www.meteoblue.com/en/weather/widget/three/royston_hertfordshire_united-kingdom_2639110?geoloc=fixed&nocurrent=0&noforecast=0&days=3&tempunit=CELSIUS&windunit=METER_PER_SECOND&layout=light" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups"></iframe>
     </div>
 
     <div class="grid" id="grid"></div>
 
-    <div class="notice" contenteditable="false">RPC Notice</div>
+    <div class="notice" contenteditable="false">
+      <strong>RPC Notices:</strong>
+    </div>
   </div>
 
   <script>
@@ -159,33 +124,6 @@
       link.target = '_blank';
       link.textContent = t.title;
       grid.appendChild(link);
-    });
-
-    // Public Notice Board
-    const noticeList = document.getElementById('noticeList');
-    const newNoticeInput = document.getElementById('newNoticeInput');
-    const addNoticeBtn = document.getElementById('addNoticeBtn');
-    const savedItems = JSON.parse(localStorage.getItem('publicNoticeItems')) || [];
-
-    function renderNotices() {
-      noticeList.innerHTML = '';
-      savedItems.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = item;
-        noticeList.appendChild(li);
-      });
-    }
-
-    renderNotices();
-
-    addNoticeBtn.addEventListener('click', () => {
-      const text = newNoticeInput.value.trim();
-      if (text) {
-        savedItems.push(text);
-        localStorage.setItem('publicNoticeItems', JSON.stringify(savedItems));
-        renderNotices();
-        newNoticeInput.value = '';
-      }
     });
   </script>
 </body>
