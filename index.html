@@ -34,13 +34,43 @@
       width: auto;
       max-width: 100%;
     }
+    .weather {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .main {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 95%;
+      margin: 20px auto;
+    }
+    .notice {
+      width: 25%;
+      background-color: #fff08a;
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 200px;
+      color: black;
+      font-size: 1.1rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      flex-direction: column;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      border: 1px solid #e6d56c;
+      background-image: repeating-linear-gradient(#fff08a, #fff08a 24px, #e6d56c 25px);
+      line-height: 25px;
+    }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
-      width: 90%;
-      max-width: 800px;
-      margin: 20px auto;
+      flex: 1;
+      margin: 0 10px;
     }
     .grid a {
       display: flex;
@@ -54,15 +84,63 @@
       font-size: 1.3rem;
       border-radius: 12px;
     }
+    ul {
+      padding-left: 20px;
+      margin: 0;
+      list-style-type: disc;
+    }
+    ul li {
+      margin-bottom: 10px;
+    }
+    .input-container {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    .input-container input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    .input-container button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: #17D860;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <header>
     <img src="home.png" alt="Home">
   </header>
-  <div class="grid" id="grid"></div>
+
+  <div class="weather">
+    <iframe src="https://www.meteoblue.com/en/weather/widget/three/royston_hertfordshire_united-kingdom_2639110?geoloc=fixed&nocurrent=0&noforecast=0&days=3&tempunit=CELSIUS&windunit=METER_PER_SECOND&layout=light" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups" style="width: 320px; height: 310px; border-radius: 12px;"></iframe>
+  </div>
+
+  <div class="main">
+    <div class="notice" id="publicNotice">
+      <strong>Public Notice Board:</strong>
+      <ul id="noticeList"></ul>
+      <div class="input-container">
+        <input type="text" id="newNoticeInput" placeholder="Add new note...">
+        <button id="addNoticeBtn">Add</button>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="notice" contenteditable="false">RPC Notice</div>
+  </div>
 
   <script>
+    // Create tiles dynamically
     const tiles = [
       { title: 'IoT', url: 'https://rpcgroup.xyz' },
       { title: 'Christmas Countdown', url: 'https://christmas.rpcgroup.xyz' },
@@ -81,6 +159,33 @@
       link.target = '_blank';
       link.textContent = t.title;
       grid.appendChild(link);
+    });
+
+    // Public Notice Board
+    const noticeList = document.getElementById('noticeList');
+    const newNoticeInput = document.getElementById('newNoticeInput');
+    const addNoticeBtn = document.getElementById('addNoticeBtn');
+    const savedItems = JSON.parse(localStorage.getItem('publicNoticeItems')) || [];
+
+    function renderNotices() {
+      noticeList.innerHTML = '';
+      savedItems.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        noticeList.appendChild(li);
+      });
+    }
+
+    renderNotices();
+
+    addNoticeBtn.addEventListener('click', () => {
+      const text = newNoticeInput.value.trim();
+      if (text) {
+        savedItems.push(text);
+        localStorage.setItem('publicNoticeItems', JSON.stringify(savedItems));
+        renderNotices();
+        newNoticeInput.value = '';
+      }
     });
   </script>
 </body>
