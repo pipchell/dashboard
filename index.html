@@ -101,9 +101,6 @@
       color: black;
       text-decoration: underline;
     }
-    .loading {
-      opacity: 0.7;
-    }
   </style>
 </head>
 <body>
@@ -116,7 +113,7 @@
       <strong>Weather - Royston, Hertfordshire:</strong>
       <div class="weather-box" id="weather">Loading weather...</div>
       <div class="news" id="news">
-        <strong>News:</strong>
+        <strong>Local News:</strong>
         <ul id="newsList"></ul>
       </div>
     </div>
@@ -138,7 +135,6 @@
       { title: "Pip's Site", url: 'https://pip.rpcgroup.xyz' },
       { title: 'The Hub', url: 'https://hub.rpcgroup.xyz' },
       { title: 'The Game', url: 'https://game.rpcgroup.xyz' }
-      { title: 'All Projects', url: 'https://github.com/pipchell' }
     ];
 
     const grid = document.getElementById('grid');
@@ -150,7 +146,6 @@
       grid.appendChild(link);
     });
 
-    // Auto-resizing Weather Widget for Royston
     async function loadWeather() {
       try {
         const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.05&longitude=-0.03&current_weather=true');
@@ -163,80 +158,29 @@
       }
     }
 
-    // GNews API implementation
-    async function loadGNews() {
-      const apiKey = 'e5fe7612d73a2d6debee8f7bc1b460a2';
-      const newsList = document.getElementById('newsList');
-      
-      // Show loading state
-      newsList.innerHTML = '<li class="loading">Loading news...</li>';
-      
+    // Updated Local News using GNews API with provided key
+    async function loadNews() {
       try {
-        // Using the GNews API to fetch top headlines
-        const response = await fetch(`https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=en&max=5`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
+        const res = await fetch('https://gnews.io/api/v4/search?q=Royston%20Hertfordshire&lang=en&country=gb&max=5&apikey=e5fe7612d73a2d6debee8f7bc1b460a2');
+        const data = await res.json();
+        const newsList = document.getElementById('newsList');
+        newsList.innerHTML = '';
         if (data.articles && data.articles.length > 0) {
-          newsList.innerHTML = '';
           data.articles.slice(0, 5).forEach(article => {
             const li = document.createElement('li');
             li.innerHTML = `<a href="${article.url}" target="_blank">${article.title}</a>`;
             newsList.appendChild(li);
           });
         } else {
-          newsList.innerHTML = '<li>No recent news found.</li>';
+          newsList.innerHTML = '<li>No recent local news found.</li>';
         }
-      } catch (error) {
-        console.error('Error fetching news:', error);
-        newsList.innerHTML = '<li>Unable to load news. Please try again later.</li>';
+      } catch (e) {
+        document.getElementById('newsList').innerHTML = '<li>Unable to load news.</li>';
       }
     }
 
-    // Alternative function for searching news by keyword
-    async function searchGNews(keyword) {
-      const apiKey = 'e5fe7612d73a2d6debee8f7bc1b460a2';
-      const newsList = document.getElementById('newsList');
-      
-      // Show loading state
-      newsList.innerHTML = '<li class="loading">Loading news...</li>';
-      
-      try {
-        // Using the GNews API to search for news
-        const response = await fetch(`https://gnews.io/api/v4/search?q=${encodeURIComponent(keyword)}&token=${apiKey}&lang=en&max=5`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.articles && data.articles.length > 0) {
-          newsList.innerHTML = '';
-          data.articles.slice(0, 5).forEach(article => {
-            const li = document.createElement('li');
-            li.innerHTML = `<a href="${article.url}" target="_blank">${article.title}</a>`;
-            newsList.appendChild(li);
-          });
-        } else {
-          newsList.innerHTML = '<li>No news found for your search.</li>';
-        }
-      } catch (error) {
-        console.error('Error fetching news:', error);
-        newsList.innerHTML = '<li>Unable to load news. Please try again later.</li>';
-      }
-    }
-
-    // Load weather and news on page load
     loadWeather();
-    loadGNews(); // Using top headlines by default
-    
-    // Uncomment the line below if you want to search for specific news instead
-    // searchGNews('Royston Hertfordshire');
+    loadNews();
   </script>
 </body>
 </html>
