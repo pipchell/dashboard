@@ -38,11 +38,12 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      flex-wrap: wrap;
       width: 95%;
       margin: 20px auto;
     }
     .notice {
-      width: 25%;
+      flex: 1 1 25%;
       background-color: #fff08a;
       border-radius: 12px;
       padding: 20px;
@@ -56,6 +57,13 @@
       background-image: repeating-linear-gradient(#fff08a, #fff08a 24px, #e6d56c 25px);
       line-height: 25px;
       height: auto;
+      margin: 10px;
+      box-sizing: border-box;
+    }
+    .weather-news {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 25%;
     }
     .weather-box, .news {
       width: 100%;
@@ -77,8 +85,9 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
-      flex: 1;
-      margin: 0 10px;
+      flex: 1 1 50%;
+      margin: 10px;
+      box-sizing: border-box;
     }
     .grid a {
       display: flex;
@@ -101,6 +110,30 @@
       color: black;
       text-decoration: underline;
     }
+
+    /* Mobile layout */
+    @media (max-width: 768px) {
+      .main {
+        flex-direction: column;
+        align-items: center;
+      }
+      .weather-news, .grid, .notice {
+        width: 90%;
+        margin: 10px auto;
+      }
+      .weather-news {
+        order: 1;
+      }
+      .grid {
+        order: 2;
+      }
+      .notice[contenteditable="false"] {
+        order: 3;
+      }
+      .news {
+        order: 4;
+      }
+    }
   </style>
 </head>
 <body>
@@ -109,7 +142,7 @@
   </header>
 
   <div class="main">
-    <div class="notice" id="noticeBoard">
+    <div class="weather-news notice" id="weatherNews">
       <strong>Weather - Royston, Hertfordshire:</strong>
       <div class="weather-box" id="weather">Loading weather...</div>
       <div class="news" id="news">
@@ -158,10 +191,9 @@
       }
     }
 
-    // Updated Local News using GNews API with provided key
     async function loadNews() {
       try {
-        const res = await fetch('https://gnews.io/api/v4/search?q=Royston%20Hertfordshire&lang=en&country=gb&max=5&apikey=e5fe7612d73a2d6debee8f7bc1b460a2');
+        const res = await fetch('https://gnews.io/api/v4/search?q=Royston&max=5&apikey=e5fe7612d73a2d6debee8f7bc1b460a2');
         const data = await res.json();
         const newsList = document.getElementById('newsList');
         newsList.innerHTML = '';
