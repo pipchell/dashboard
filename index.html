@@ -25,13 +25,12 @@
     }
 
     header img {
-      max-width: 90%;
+      width: 100%;
       height: auto;
       display: block;
-      margin: 0 auto;
+      margin: 0;
     }
 
-    /* Layout */
     .main {
       display: flex;
       justify-content: space-between;
@@ -57,7 +56,6 @@
       margin-top: 0;
     }
 
-    /* Notepaper look */
     .note {
       background: #fff08a;
       background-image: repeating-linear-gradient(#fff08a, #fff08a 24px, #e6d56c 25px);
@@ -67,14 +65,8 @@
       padding: 20px;
       margin: 10px;
       font-weight: bold;
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       box-sizing: border-box;
-    }
-
-    .note hr {
-      border: none;
-      border-top: 2px solid #e6d56c;
-      margin: 10px 0;
     }
 
     .grid-link {
@@ -85,9 +77,9 @@
       color: black;
       text-decoration: none;
       font-weight: bold;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       border-radius: 12px;
-      padding: 20px;
+      padding: 15px;
       text-align: center;
       transition: 0.2s;
     }
@@ -97,34 +89,53 @@
     }
 
     ul { padding-left: 20px; margin: 0; }
-    li a { color: black; text-decoration: underline; }
+    li a { color: black; text-decoration: none; }
 
-    .weather-temp { font-size: 2rem; margin: 8px 0 5px; }
-    .weather-wind { margin-top: 5px; }
+    .weather-temp { font-size: 2rem; margin: 10px 0 10px; }
+    .weather-wind { margin-top: 10px; }
 
-    /* Mobile layout */
+    #localNews ul li:not(:last-child),
+    #rpcNotice ul li:not(:last-child) {
+      border-bottom: 1px solid #e6d56c;
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+    }
+
+    #localNews strong, #rpcNotice strong {
+      display: block;
+      margin-bottom: 8px;
+      border-bottom: 2px solid black;
+      padding-bottom: 4px;
+    }
+
+    #weatherNews strong {
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    /* MOBILE LAYOUT */
     @media (max-width: 768px) {
       .main {
         flex-direction: column;
         align-items: center;
       }
 
-      .center {
-        width: 90%;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      }
+      header { order: 0; }
+      #weatherNews { order: 1; width: 90%; text-align: center; }
+      .center { order: 2; width: 90%; gap: 10px; }
+      #rpcNotice { order: 3; width: 90%; text-align: left; }
+      #localNews { order: 4; width: 90%; text-align: left; }
 
-      .note {
+      .note, .grid-link {
         width: 90%;
         max-width: 600px;
       }
 
-      /* Order on mobile */
-      header { order: 0; }
-      #weatherNews { order: 1; width: 90%; }
-      .center { order: 2; width: 90%; }
-      #rpcNotice { order: 3; width: 90%; }
-      #localNews { order: 4; width: 90%; }
+      .grid-link {
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 10px;
+      }
     }
   </style>
 </head>
@@ -132,24 +143,19 @@
   <header><img src="home.png" alt="Home"></header>
 
   <div class="main">
-    <!-- Left: Weather + News -->
+    <!-- LEFT COLUMN (Weather + News) -->
     <div class="left-column">
       <div class="note" id="weatherNews">
         <strong>Weather - Royston, Hertfordshire:</strong>
         <div class="weather-temp" id="weatherTemp"></div>
         <div id="weatherBox">Loading...</div>
       </div>
-      <div class="note" id="localNews">
-        <strong>Local News:</strong>
-        <hr>
-        <ul id="newsList"><li>Loading...</li></ul>
-      </div>
     </div>
 
-    <!-- Center: Links -->
+    <!-- CENTER COLUMN (Links + Widgets) -->
     <div class="center" id="linkGrid"></div>
 
-    <!-- Right: RPC Notices -->
+    <!-- RIGHT COLUMN (RPC Notices) -->
     <div class="right-column">
       <div class="note" id="rpcNotice">
         <strong>RPC Notices:</strong>
@@ -161,8 +167,14 @@
     </div>
   </div>
 
+  <!-- NEWS SECTION FULL WIDTH -->
+  <div class="note" id="localNews" style="width:95%; margin:20px auto;">
+    <strong>Local News:</strong>
+    <ul id="newsList"><li>Loading...</li></ul>
+  </div>
+
   <script>
-    // --- LINKS ---
+    // LINKS
     const links = [
       { name: 'IoT', url: 'https://rpcgroup.xyz' },
       { name: 'Christmas Countdown', url: 'https://christmas.rpcgroup.xyz' },
@@ -173,6 +185,7 @@
       { name: 'The Hub', url: 'https://hub.rpcgroup.xyz' },
       { name: 'The Game', url: 'https://game.rpcgroup.xyz' }
     ];
+
     const grid = document.getElementById('linkGrid');
     links.forEach(l => {
       const a = document.createElement('a');
@@ -183,7 +196,7 @@
       grid.appendChild(a);
     });
 
-    // --- WEATHER ---
+    // WEATHER
     async function loadWeather() {
       try {
         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.05&longitude=-0.03&current_weather=true');
@@ -196,7 +209,7 @@
       }
     }
 
-    // --- LOCAL NEWS ---
+    // LOCAL NEWS
     async function loadNews() {
       const newsList = document.getElementById('newsList');
       try {
@@ -204,23 +217,16 @@
         const res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(rss));
         const data = await res.json();
         const parser = new DOMParser();
-        const xml = parser.parseFromString(data.contents, "text/xml");
-        const items = xml.querySelectorAll("item");
+        const xml = parser.parseFromString(data.contents, 'text/xml');
+        const items = xml.querySelectorAll('item');
         newsList.innerHTML = '';
         items.forEach((item, i) => {
           if (i < 5) {
             const li = document.createElement('li');
-            const title = item.querySelector("title").textContent;
-            const link = item.querySelector("link").textContent;
+            const title = item.querySelector('title').textContent;
+            const link = item.querySelector('link').textContent;
             li.innerHTML = `<a href="${link}" target="_blank">${title}</a>`;
             newsList.appendChild(li);
-            if (i < 4) {
-              const hr = document.createElement('hr');
-              hr.style.border = 'none';
-              hr.style.borderTop = '1px solid #e6d56c';
-              hr.style.margin = '8px 0';
-              newsList.appendChild(hr);
-            }
           }
         });
       } catch (err) {
