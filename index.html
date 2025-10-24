@@ -8,151 +8,137 @@
   <style>
     @font-face {
       font-family: 'LeagueSpartan';
-      src: url('LeagueSpartan-Bold.woff2') format('woff2'),
-           url('LeagueSpartan-Bold.woff') format('woff');
+      src: url('LeagueSpartan-Bold.woff2') format('woff2');
       font-weight: bold;
-      font-style: normal;
     }
 
     body {
-      background-color: black;
-      margin: 0;
-      font-family: 'LeagueSpartan', sans-serif;
+      background: black;
       color: black;
+      font-family: 'LeagueSpartan', sans-serif;
+      margin: 0;
     }
 
     header {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      text-align: center;
+      margin: 10px 0;
     }
 
     header img {
-      max-width: 100%;
+      max-width: 90%;
       height: auto;
     }
 
-    /* --- Containers --- */
+    /* Layout */
     .main {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      width: 95%;
-      margin: 20px auto;
       flex-wrap: nowrap;
+      width: 95%;
+      margin: 0 auto;
     }
 
     .left-column, .right-column {
       flex: 1 1 25%;
       display: flex;
       flex-direction: column;
+      align-items: stretch;
     }
 
-    .grid {
+    .center {
       flex: 1 1 50%;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 10px;
-      margin: 10px;
+      align-items: stretch;
     }
 
-    /* --- Notepaper Style --- */
-    .notice, .weather-news {
-      background-color: #fff08a;
-      border-radius: 12px;
-      padding: 20px;
-      color: black;
-      font-size: 1.1rem;
-      font-weight: bold;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      border: 1px solid #e6d56c;
+    /* Notepaper look */
+    .note {
+      background: #fff08a;
       background-image: repeating-linear-gradient(#fff08a, #fff08a 24px, #e6d56c 25px);
-      line-height: 25px;
+      border: 1px solid #e6d56c;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      padding: 15px;
       margin: 10px;
+      font-weight: bold;
       box-sizing: border-box;
     }
 
-    .weather-temp {
-      font-size: 2rem;
-      font-weight: bold;
-      margin-top: 10px;
-      margin-bottom: 8px;
-    }
-
-    .grid a {
+    .grid-link {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 25px;
-      background-color: #17D860;
+      background: #17D860;
+      color: black;
       text-decoration: none;
-      color: black;
       font-weight: bold;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: 0.2s;
     }
 
-    ul {
-      text-align: left;
-      margin: 0;
-      padding-left: 20px;
+    .grid-link:hover {
+      background: #14bf56;
     }
 
-    li a {
-      color: black;
-      text-decoration: underline;
-    }
+    ul { padding-left: 20px; margin: 0; }
+    li a { color: black; text-decoration: underline; }
 
-    /* --- Mobile Layout --- */
+    .weather-temp { font-size: 2rem; margin: 5px 0; }
+    .weather-wind { margin-top: 5px; }
+
+    /* Mobile layout */
     @media (max-width: 768px) {
       .main {
         flex-direction: column;
         align-items: center;
-        width: 100%;
       }
 
-      .grid {
+      .center {
         width: 90%;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       }
 
-      .weather-news, .notice {
+      .note {
         width: 90%;
         max-width: 600px;
-        margin: 10px auto;
       }
 
-      /* Order for mobile: weather, links, notices, news */
-      .weather-news { order: 1; }
-      .grid { order: 2; }
-      .notice { order: 3; }
+      /* order: weather, links, notices, news */
+      #weatherNews { order: 1; }
+      .center { order: 2; }
+      #rpcNotice { order: 3; }
+      #localNews { order: 4; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <img src="home.png" alt="Home">
-  </header>
+  <header><img src="home.png" alt="Home"></header>
 
   <div class="main">
-    <!-- Left column: Weather + News -->
+    <!-- Left: Weather + News -->
     <div class="left-column">
-      <div class="weather-news" id="weatherNews">
+      <div class="note" id="weatherNews">
         <strong>Weather - Royston, Hertfordshire:</strong>
-        <div id="weatherData">Loading weather...</div>
-        <br>
+        <div id="weatherBox">Loading...</div>
+      </div>
+      <div class="note" id="localNews">
         <strong>Local News:</strong>
-        <ul id="newsList"><li>Loading news...</li></ul>
+        <ul id="newsList"><li>Loading...</li></ul>
       </div>
     </div>
 
-    <!-- Middle column: Links -->
-    <div class="grid" id="grid"></div>
+    <!-- Center: Links -->
+    <div class="center" id="linkGrid"></div>
 
-    <!-- Right column: RPC Notices -->
+    <!-- Right: RPC Notices -->
     <div class="right-column">
-      <div class="notice" contenteditable="false">
+      <div class="note" id="rpcNotice">
         <strong>RPC Notices:</strong>
         <ul>
           <li>System stable.</li>
@@ -163,61 +149,63 @@
   </div>
 
   <script>
-    /* --- Link Tiles --- */
-    const tiles = [
-      { title: 'IoT', url: 'https://rpcgroup.xyz' },
-      { title: 'Christmas Countdown', url: 'https://christmas.rpcgroup.xyz' },
-      { title: 'RPCforum', url: 'https://forum.rpcgroup.xyz' },
-      { title: 'RPCdvd Screensaver', url: 'https://dvd.rpcgroup.xyz' },
-      { title: 'RPCmail', url: 'https://www.zoho.com/mail/?src=zindex&sec=fa' },
-      { title: \"Pip's Site\", url: 'https://pip.rpcgroup.xyz' },
-      { title: 'The Hub', url: 'https://hub.rpcgroup.xyz' },
-      { title: 'The Game', url: 'https://game.rpcgroup.xyz' }
+    // --- LINKS ---
+    const links = [
+      { name: 'IoT', url: 'https://rpcgroup.xyz' },
+      { name: 'Christmas Countdown', url: 'https://christmas.rpcgroup.xyz' },
+      { name: 'RPCforum', url: 'https://forum.rpcgroup.xyz' },
+      { name: 'RPCdvd Screensaver', url: 'https://dvd.rpcgroup.xyz' },
+      { name: 'RPCmail', url: 'https://www.zoho.com/mail/?src=zindex&sec=fa' },
+      { name: "Pip's Site", url: 'https://pip.rpcgroup.xyz' },
+      { name: 'The Hub', url: 'https://hub.rpcgroup.xyz' },
+      { name: 'The Game', url: 'https://game.rpcgroup.xyz' }
     ];
-
-    const grid = document.getElementById('grid');
-    tiles.forEach(t => {
-      const link = document.createElement('a');
-      link.href = t.url;
-      link.target = '_blank';
-      link.textContent = t.title;
-      grid.appendChild(link);
+    const grid = document.getElementById('linkGrid');
+    links.forEach(l => {
+      const a = document.createElement('a');
+      a.href = l.url;
+      a.target = '_blank';
+      a.className = 'grid-link';
+      a.textContent = l.name;
+      grid.appendChild(a);
     });
 
-    /* --- Weather --- */
+    // --- WEATHER ---
     async function loadWeather() {
       try {
         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.05&longitude=-0.03&current_weather=true');
         const data = await res.json();
-        const weatherBox = document.getElementById('weatherData');
-        const { temperature, windspeed } = data.current_weather;
-        weatherBox.innerHTML = `
-          <div class='weather-temp'>${temperature}°C</div>
-          <div style='margin-bottom:8px;'>Wind: ${windspeed} m/s</div>`;
-      } catch (err) {
-        document.getElementById('weatherData').textContent = 'Unable to load weather.';
+        const w = data.current_weather;
+        document.getElementById('weatherBox').innerHTML = `
+          <div class="weather-temp">${w.temperature}°C</div>
+          <div class="weather-wind">Wind: ${w.windspeed} m/s</div>`;
+      } catch (e) {
+        document.getElementById('weatherBox').textContent = 'Unable to load weather.';
       }
     }
 
-    /* --- News (no API key) --- */
+    // --- LOCAL NEWS (RSS, no API key) ---
     async function loadNews() {
+      const newsList = document.getElementById('newsList');
       try {
-        const rssURL = 'https://news.google.com/rss/search?q=Royston+Hertfordshire&hl=en-GB&gl=GB&ceid=GB:en';
-        const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssURL));
+        const rss = 'https://news.google.com/rss/search?q=Royston+Hertfordshire&hl=en-GB&gl=GB&ceid=GB:en';
+        const res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(rss));
         const data = await res.json();
-        const newsList = document.getElementById('newsList');
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data.contents, "text/xml");
+        const items = xml.querySelectorAll("item");
         newsList.innerHTML = '';
-        if (data.items && data.items.length > 0) {
-          data.items.slice(0, 5).forEach(item => {
+        items.forEach((item, i) => {
+          if (i < 5) {
             const li = document.createElement('li');
-            li.innerHTML = `<a href=\"${item.link}\" target=\"_blank\">${item.title}</a>`;
+            const title = item.querySelector("title").textContent;
+            const link = item.querySelector("link").textContent;
+            li.innerHTML = `<a href="${link}" target="_blank">${title}</a>`;
             newsList.appendChild(li);
-          });
-        } else {
-          newsList.innerHTML = '<li>No recent local news found.</li>';
-        }
-      } catch (e) {
-        document.getElementById('newsList').innerHTML = '<li>Unable to load news.</li>';
+          }
+        });
+      } catch (err) {
+        newsList.innerHTML = '<li>Unable to load local news.</li>';
       }
     }
 
