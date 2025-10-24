@@ -21,12 +21,14 @@
 
     header {
       text-align: center;
-      margin: 10px 0;
+      margin: 0;
     }
 
     header img {
       max-width: 90%;
       height: auto;
+      display: block;
+      margin: 0 auto;
     }
 
     /* Layout */
@@ -52,6 +54,7 @@
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 10px;
       align-items: stretch;
+      margin-top: 0;
     }
 
     /* Notepaper look */
@@ -61,10 +64,17 @@
       border: 1px solid #e6d56c;
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      padding: 15px;
+      padding: 20px;
       margin: 10px;
       font-weight: bold;
+      font-size: 1.3rem;
       box-sizing: border-box;
+    }
+
+    .note hr {
+      border: none;
+      border-top: 2px solid #e6d56c;
+      margin: 10px 0;
     }
 
     .grid-link {
@@ -89,7 +99,7 @@
     ul { padding-left: 20px; margin: 0; }
     li a { color: black; text-decoration: underline; }
 
-    .weather-temp { font-size: 2rem; margin: 5px 0; }
+    .weather-temp { font-size: 2rem; margin: 8px 0 5px; }
     .weather-wind { margin-top: 5px; }
 
     /* Mobile layout */
@@ -109,11 +119,12 @@
         max-width: 600px;
       }
 
-      /* order: weather, links, notices, news */
-      #weatherNews { order: 1; }
-      .center { order: 2; }
-      #rpcNotice { order: 3; }
-      #localNews { order: 4; }
+      /* Order on mobile */
+      header { order: 0; }
+      #weatherNews { order: 1; width: 90%; }
+      .center { order: 2; width: 90%; }
+      #rpcNotice { order: 3; width: 90%; }
+      #localNews { order: 4; width: 90%; }
     }
   </style>
 </head>
@@ -125,10 +136,12 @@
     <div class="left-column">
       <div class="note" id="weatherNews">
         <strong>Weather - Royston, Hertfordshire:</strong>
+        <div class="weather-temp" id="weatherTemp"></div>
         <div id="weatherBox">Loading...</div>
       </div>
       <div class="note" id="localNews">
         <strong>Local News:</strong>
+        <hr>
         <ul id="newsList"><li>Loading...</li></ul>
       </div>
     </div>
@@ -176,15 +189,14 @@
         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.05&longitude=-0.03&current_weather=true');
         const data = await res.json();
         const w = data.current_weather;
-        document.getElementById('weatherBox').innerHTML = `
-          <div class="weather-temp">${w.temperature}°C</div>
-          <div class="weather-wind">Wind: ${w.windspeed} m/s</div>`;
+        document.getElementById('weatherTemp').textContent = `${w.temperature}°C`;
+        document.getElementById('weatherBox').innerHTML = `<div class="weather-wind">Wind: ${w.windspeed} m/s</div>`;
       } catch (e) {
         document.getElementById('weatherBox').textContent = 'Unable to load weather.';
       }
     }
 
-    // --- LOCAL NEWS (RSS, no API key) ---
+    // --- LOCAL NEWS ---
     async function loadNews() {
       const newsList = document.getElementById('newsList');
       try {
@@ -202,6 +214,13 @@
             const link = item.querySelector("link").textContent;
             li.innerHTML = `<a href="${link}" target="_blank">${title}</a>`;
             newsList.appendChild(li);
+            if (i < 4) {
+              const hr = document.createElement('hr');
+              hr.style.border = 'none';
+              hr.style.borderTop = '1px solid #e6d56c';
+              hr.style.margin = '8px 0';
+              newsList.appendChild(hr);
+            }
           }
         });
       } catch (err) {
